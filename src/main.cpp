@@ -33,5 +33,16 @@ int main()
 
     zk_handle->ZkClose();
 
+    CNodeInfo node_info1;
+    node_info1.m_ip = "127.0.0.1";
+    node_info1.m_port = "12345";
+
+    node_info = node_info1.ToString();
+
+    CNodeInfo node_info2;
+    node_info2.FromString(node_info);
+
+    printf("main node_info_1_str=%s node_info_2_ip=%s node_info_2_port=%s\n", node_info.c_str(), node_info2.m_ip.c_str(), node_info2.m_port.c_str());
+
     return 0;
 }
