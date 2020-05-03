@@ -10,6 +10,7 @@ int main()
     CZkHandle* zk_handle = CZkHandle::GetInstance();
     struct Stat stat;
     set<string> node_list;
+    string node_info;
 
     zk_handle->ZkInit(host_list, time_out);
     zk_handle->ZkExists("/", stat);
@@ -18,6 +19,8 @@ int main()
     zk_handle->ZkCreateNode("/test_1", "1", true);
     zk_handle->ZkCreateNode("/test_2", "2", false);
     zk_handle->ZkCreateNode("/test_2", "2", false);
+
+    zk_handle->ZkGetNodeInfo("/test_2", node_info);
 
     node_list.clear();
     zk_handle->ZkGetChildren("/", node_list);

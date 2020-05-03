@@ -62,7 +62,7 @@ int CZkHandle::ZkExists(const string& path, struct Stat & stat)
 int CZkHandle::ZkCreateNode(const string& path, const string& value, bool is_sequential)
 {
     int ret_code = 0;
-    char tmp_name[1024];
+    char tmp_name[kMaxBufferLen];
     int flag = ZOO_EPHEMERAL;
     if (is_sequential)
     {
@@ -70,7 +70,7 @@ int CZkHandle::ZkCreateNode(const string& path, const string& value, bool is_seq
     }
     printf("CZkHandle::ZkCreateNode create node [path=%s] [value=%s]\n", path.c_str(), value.c_str());
     
-    ret_code = zoo_create(m_zk_handle, path.c_str(), value.c_str(), value.size(), &ZOO_OPEN_ACL_UNSAFE, flag, tmp_name, 1024);
+    ret_code = zoo_create(m_zk_handle, path.c_str(), value.c_str(), value.size(), &ZOO_OPEN_ACL_UNSAFE, flag, tmp_name, kMaxBufferLen);
     if (ZOK != ret_code)
     {
         printf("CZkHandle::ZkCreateNode create node fail. ret=%d\n", ret_code);
@@ -100,7 +100,7 @@ int CZkHandle::ZkGetChildren(const string& path, set<string>& node_list)
 
     if (ZOK != ret_code)
     {
-        printf("CZkHandle::ZkGetChildren get children fail.\nj");
+        printf("CZkHandle::ZkGetChildren get children fail. ret=%d\n", ret_code);
         return ret_code;
     }
     
@@ -113,6 +113,33 @@ int CZkHandle::ZkGetChildren(const string& path, set<string>& node_list)
     }
 
     deallocate_String_vector(&children_list);
+    return ret_code;
+}
+
+int CZkHandle::ZkGetNodeInfo(const string& path, string& info)
+{
+    int ret_code = 0;
+    struct Stat stat;
+
+    char buffer[kMaxBufferLen];
+    int buffer_len = kMaxBufferLen;
+
+    printf("CZkHandle::ZkGetNodeInfo get node info for path=%s\n", path.c_str());
+    ret_code = zoo_get(m_zk_handle, path.c_str(), 0, buffer, &buffer_len, &stat);
+
+    if (ZOK != ret_code)
+    {
+        printf("CZkHandle::ZkGetNodeInfo get node info for path=%s fail. ret=%d\n", path.c_str(), ret_code);
+        return ret_code;
+    }
+
+    buffer[buffer_len] = 0;
+    printf("CZkHandle::ZkGetNodeInfo get node info for path=%s succ. buffer=%s\n", path.c_str(), buffer);
+    printf("CZkHandle::ZkGetNodeInfo: [path=%s] [czxid=%ld] [mzxid=%ld] [version=%d] [cversion=%d] [child_num=%d]\n",
+        path.c_str(), stat.czxid, stat.mzxid, stat.version, stat.cversion, stat.numChildren);
+
+    info = buffer;
+
     return ret_code;
 }
 

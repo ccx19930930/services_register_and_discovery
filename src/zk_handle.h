@@ -14,6 +14,8 @@
 
 using namespace std;
 
+const int kMaxBufferLen = 4096;
+
 class CZkHandle : public CUnCopyable
 {
 private:
@@ -32,7 +34,10 @@ public:
     int ZkDeleteNode(const string& path, const int version = -1);
 
     int ZkGetChildren(const string& path, set<string>& node_list);
-    
+    int ZkGetNodeInfo(const string& path, string & info);
+
+
+
 private:
     static void ZkInitWatchar(zhandle_t* zh, int type, int state, const char* path, void* watcherCtx);
 
