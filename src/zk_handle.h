@@ -3,11 +3,16 @@
 
 #include "base_class.h"
 
+#include <set>
+#include <string>
+
 #include <pthread.h>
 
 #include <zookeeper.h>
 #include <zookeeper_log.h>
 #include <zookeeper.jute.h>
+
+using namespace std;
 
 class CZkHandle : public CUnCopyable
 {
@@ -19,13 +24,15 @@ public:
     static CZkHandle* GetInstance();
 
 public:
-    int ZkInit(const char* host_list, const int time_out);
+    int ZkInit(const string& host_list, const int time_out);
     int ZkClose();
-    int ZkExists(const char* path, struct Stat & stat);
+    int ZkExists(const string& path, struct Stat & stat);
 
-    int ZkCreateNode(const char* path, const char* value, bool is_sequential);
-    int ZkDeleteNode(const char* path, const int version = -1);
+    int ZkCreateNode(const string& path, const string& value, bool is_sequential);
+    int ZkDeleteNode(const string& path, const int version = -1);
 
+    int ZkGetChildren(const string& path, set<string>& node_list);
+    
 private:
     static void ZkInitWatchar(zhandle_t* zh, int type, int state, const char* path, void* watcherCtx);
 

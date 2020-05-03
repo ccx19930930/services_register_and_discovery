@@ -2,7 +2,6 @@
 #include "auto_lock.h"
 
 #include <stdio.h>
-#include <string.h>
 
 using namespace std;
 
@@ -27,10 +26,10 @@ CZkHandle* CZkHandle::GetInstance()
     return m_pins;
 }
 
-int CZkHandle::ZkInit(const char* host_list, const int time_out)
+int CZkHandle::ZkInit(const string& host_list, const int time_out)
 {
     zoo_set_debug_level(ZOO_LOG_LEVEL_ERROR);
-    m_zk_handle = zookeeper_init(host_list, &ZkInitWatchar, time_out, 0, nullptr, 0);
+    m_zk_handle = zookeeper_init(host_list.c_str(), &ZkInitWatchar, time_out, 0, nullptr, 0);
     if (nullptr == m_zk_handle)
     {
         printf("CZkHandle::ZkInit: connect to zk fail.\n");
@@ -46,21 +45,21 @@ int CZkHandle::ZkClose()
     printf("CZkHandle::ZkClose: zk close.\n");
 }
 
-int CZkHandle::ZkExists(const char* path, struct Stat & stat)
+int CZkHandle::ZkExists(const string& path, struct Stat & stat)
 {
     printf("CZkHandle::ZkExists: ==========BEGIN============\n");
-    int ret_code = zoo_exists(m_zk_handle, path, 0, &stat);
+    int ret_code = zoo_exists(m_zk_handle, path.c_str(), 0, &stat);
     printf("CZkHandle::ZkExists: [ret=%d]\n", ret_code);
     if(ZOK == ret_code)
     {
         printf("CZkHandle::ZkExists: [path=%s] [czxid=%ld] [mzxid=%ld] [version=%d] [cversion=%d] [child_num=%d]\n",
-            path, stat.czxid, stat.mzxid, stat.version, stat.cversion, stat.numChildren);
+            path.c_str(), stat.czxid, stat.mzxid, stat.version, stat.cversion, stat.numChildren);
     }
     printf("CZkHandle::ZkExists: ==========END============\n");
     return ret_code;
 }
 
-int CZkHandle::ZkCreateNode(const char* path, const char* value, bool is_sequential)
+int CZkHandle::ZkCreateNode(const string& path, const string& value, bool is_sequential)
 {
     int ret_code = 0;
     char tmp_name[1024];
@@ -69,9 +68,9 @@ int CZkHandle::ZkCreateNode(const char* path, const char* value, bool is_sequent
     {
         flag |= ZOO_SEQUENCE;
     }
-    printf("CZkHandle::ZkCreateNode create node [path=%s] [value=%s]\n", path, value);
+    printf("CZkHandle::ZkCreateNode create node [path=%s] [value=%s]\n", path.c_str(), value.c_str());
     
-    ret_code = zoo_create(m_zk_handle, path, value, strlen(value), &ZOO_OPEN_ACL_UNSAFE, flag, tmp_name, 1024);
+    ret_code = zoo_create(m_zk_handle, path.c_str(), value.c_str(), value.size(), &ZOO_OPEN_ACL_UNSAFE, flag, tmp_name, 1024);
     if (ZOK != ret_code)
     {
         printf("CZkHandle::ZkCreateNode create node fail. ret=%d\n", ret_code);
@@ -83,10 +82,37 @@ int CZkHandle::ZkCreateNode(const char* path, const char* value, bool is_sequent
     return ret_code;
 }
 
-int CZkHandle::ZkDeleteNode(const char* path, const int version /*= -1*/)
+int CZkHandle::ZkDeleteNode(const string& path, const int version /*= -1*/)
 {
-    int ret_code = zoo_delete(m_zk_handle, path, version);
-    printf("CZkHandle::ZkDeleteNode delete node path=%s version=%d ret=%d\n", path, version, ret_code);
+    int ret_code = zoo_delete(m_zk_handle, path.c_str(), version);
+    printf("CZkHandle::ZkDeleteNode delete node path=%s version=%d ret=%d\n", path.c_str(), version, ret_code);
+    return ret_code;
+}
+
+int CZkHandle::ZkGetChildren(const string& path, set<string>& node_list)
+{
+    int ret_code = 0;
+    struct String_vector children_list;
+
+    printf("CZkHandle::ZkGetChildren get children for path=%s\n", path.c_str());
+
+    ret_code = zoo_get_children(m_zk_handle, path.c_str(), 0, &children_list);
+
+    if (ZOK != ret_code)
+    {
+        printf("CZkHandle::ZkGetChildren get children fail.\nj");
+        return ret_code;
+    }
+    
+    printf("CZkHandle::ZkGetChildren get children succ. children_num=%d\n", children_list.count);
+
+    for (unsigned int children_idx = 0; children_idx < children_list.count; ++children_idx)
+    {
+        printf("CZkHandle::ZkGetChildren children_idx=%u, children_name=%s\n", children_idx, children_list.data[children_idx]);
+        node_list.insert(children_list.data[children_idx]);
+    }
+
+    deallocate_String_vector(&children_list);
     return ret_code;
 }
 
