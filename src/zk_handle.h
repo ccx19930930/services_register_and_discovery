@@ -30,16 +30,21 @@ public:
     int ZkClose();
     int ZkExists(const string& path, struct Stat & stat);
 
+public:
     int ZkCreateNode(const string& path, const string& value, bool is_sequential);
     int ZkDeleteNode(const string& path, const int version = -1);
 
+public:
     int ZkGetChildren(const string& path, set<string>& node_list);
     int ZkGetNodeInfo(const string& path, string & info);
+
+    int ZkWgetChildren(const string& path, watcher_fn watcher, set<string>& node_list);
+    int ZkWGetNodeInfo(const string& path, watcher_fn watcher, string& info);
 
 
 
 private:
-    static void ZkInitWatchar(zhandle_t* zh, int type, int state, const char* path, void* watcherCtx);
+    static void ZkInitWatcher(zhandle_t* zh, int type, int state, const char* path, void* watcherCtx);
 
 private:
     zhandle_t* m_zk_handle;

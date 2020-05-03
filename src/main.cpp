@@ -13,6 +13,7 @@ int main()
     string node_info;
 
     zk_handle->ZkInit(host_list, time_out);
+    sleep(1);
     zk_handle->ZkExists("/", stat);
 
     zk_handle->ZkCreateNode("/test_1", "1", true);
