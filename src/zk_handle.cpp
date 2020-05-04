@@ -3,8 +3,6 @@
 
 #include <stdio.h>
 
-using namespace std;
-
 CZkHandle* CZkHandle::m_pins = nullptr;
 pthread_mutex_t CZkHandle::m_mutex;
 
@@ -47,7 +45,6 @@ int CZkHandle::ZkClose()
 
 int CZkHandle::ZkExists(const string& path, struct Stat & stat)
 {
-    printf("CZkHandle::ZkExists: ==========BEGIN============\n");
     int ret_code = zoo_exists(m_zk_handle, path.c_str(), 0, &stat);
     printf("CZkHandle::ZkExists: [ret=%d]\n", ret_code);
     if(ZOK == ret_code)
@@ -55,11 +52,10 @@ int CZkHandle::ZkExists(const string& path, struct Stat & stat)
         printf("CZkHandle::ZkExists: [path=%s] [czxid=%ld] [mzxid=%ld] [version=%d] [cversion=%d] [child_num=%d]\n",
             path.c_str(), stat.czxid, stat.mzxid, stat.version, stat.cversion, stat.numChildren);
     }
-    printf("CZkHandle::ZkExists: ==========END============\n");
     return ret_code;
 }
 
-int CZkHandle::ZkCreateNode(const string& path, const string& value, bool is_sequential)
+int CZkHandle::ZkCreateNode(const string& path, const string& value, bool is_sequential, string& raw_node_name)
 {
     int ret_code = 0;
     char tmp_name[kMaxBufferLen];
@@ -79,6 +75,8 @@ int CZkHandle::ZkCreateNode(const string& path, const string& value, bool is_seq
     {
         printf("CZkHandle::ZkCreateNode create node succ! path=%s\n", tmp_name);
     }
+
+    raw_node_name = tmp_name;
     return ret_code;
 }
 
@@ -116,10 +114,9 @@ int CZkHandle::ZkGetChildren(const string& path, set<string>& node_list)
     return ret_code;
 }
 
-int CZkHandle::ZkGetNodeInfo(const string& path, string& info)
+int CZkHandle::ZkGetNodeInfo(const string& path, string& info, struct Stat& stat)
 {
     int ret_code = 0;
-    struct Stat stat;
 
     char buffer[kMaxBufferLen];
     int buffer_len = kMaxBufferLen;
@@ -170,10 +167,9 @@ int CZkHandle::ZkWgetChildren(const string& path, watcher_fn watcher, set<string
     return ret_code;
 }
 
-int CZkHandle::ZkWGetNodeInfo(const string& path, watcher_fn watcher, string& info)
+int CZkHandle::ZkWGetNodeInfo(const string& path, watcher_fn watcher, string& info, struct Stat& stat)
 {
     int ret_code = 0;
-    struct Stat stat;
 
     char buffer[kMaxBufferLen];
     int buffer_len = kMaxBufferLen;
@@ -194,6 +190,17 @@ int CZkHandle::ZkWGetNodeInfo(const string& path, watcher_fn watcher, string& in
 
     info = buffer;
 
+    return ret_code;
+}
+
+int CZkHandle::ZkSeeNodeInfo(const string& path, const string& value)
+{
+    printf("CZkHandle::ZkSeeNodeInfo set node info. path=%s value=%s\n", path.c_str(), value.c_str());
+    int ret_code = zoo_set(m_zk_handle, path.c_str(), value.c_str(), value.size(), -1);
+    if (ZOK != ret_code)
+    {
+        printf("CZkHandle::ZkSeeNodeInfo set node fail.");
+    }
     return ret_code;
 }
 

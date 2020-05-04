@@ -14,7 +14,6 @@
 
 using namespace std;
 
-const int kMaxBufferLen = 4096;
 
 class CZkHandle : public CUnCopyable
 {
@@ -31,17 +30,18 @@ public:
     int ZkExists(const string& path, struct Stat & stat);
 
 public:
-    int ZkCreateNode(const string& path, const string& value, bool is_sequential);
+    int ZkCreateNode(const string& path, const string& value, bool is_sequential, string& raw_node_name);
     int ZkDeleteNode(const string& path, const int version = -1);
 
 public:
     int ZkGetChildren(const string& path, set<string>& node_list);
-    int ZkGetNodeInfo(const string& path, string & info);
+    int ZkGetNodeInfo(const string& path, string & info, struct Stat& stat);
 
     int ZkWgetChildren(const string& path, watcher_fn watcher, set<string>& node_list);
-    int ZkWGetNodeInfo(const string& path, watcher_fn watcher, string& info);
+    int ZkWGetNodeInfo(const string& path, watcher_fn watcher, string& info, struct Stat& stat);
 
-
+public:
+    int ZkSeeNodeInfo(const string& path, const string& value);
 
 private:
     static void ZkInitWatcher(zhandle_t* zh, int type, int state, const char* path, void* watcherCtx);

@@ -1,7 +1,7 @@
-INC_DIR:=./src/ /usr/local/include/zookeeper/
+INC_DIR:=./src/ /usr/local/include/zookeeper/ /usr/local/include/json/
 SRCS:=$(wildcard ./src/*cpp)
 OBJS:= $(patsubst %.cpp, %.o, $(SRCS))
-LIBS:= -lpthread -lzookeeper_mt
+LIBS:= -lpthread -lzookeeper_mt -ljsoncpp
 
 CXX:=g++
 

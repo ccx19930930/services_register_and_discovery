@@ -11,17 +11,21 @@ int main()
     struct Stat stat;
     set<string> node_list;
     string node_info;
+    string raw_name;
 
     zk_handle->ZkInit(host_list, time_out);
     sleep(1);
     zk_handle->ZkExists("/", stat);
 
-    zk_handle->ZkCreateNode("/test_1", "1", true);
-    zk_handle->ZkCreateNode("/test_1", "1", true);
-    zk_handle->ZkCreateNode("/test_2", "2", false);
-    zk_handle->ZkCreateNode("/test_2", "2", false);
+    zk_handle->ZkCreateNode("/test_1", "1", true, raw_name);
+    zk_handle->ZkCreateNode("/test_1", "1", true, raw_name);
+    zk_handle->ZkCreateNode("/test_2", "2", false, raw_name);
+    zk_handle->ZkCreateNode("/test_2", "2", false, raw_name);
 
-    zk_handle->ZkGetNodeInfo("/test_2", node_info);
+    zk_handle->ZkGetNodeInfo("/test_2", node_info, stat);
+    zk_handle->ZkSeeNodeInfo("/test_2", "3");
+    zk_handle->ZkGetNodeInfo("/test_2", node_info, stat);
+
 
     node_list.clear();
     zk_handle->ZkGetChildren("/", node_list);
