@@ -47,10 +47,10 @@ int CRegister::Register()
         m_is_running = true;
         if (0 != pthread_create(&m_reg_check_thread_id, nullptr, CRegister::RegisterCheckThread, nullptr))
         {
-            printf("CRegister::Register create register check thread fail.");
+            printf("CRegister::Register create register check thread fail.\n");
             return -1;
         }
-        printf("CRegister::Register create register check thread succ.");
+        printf("CRegister::Register create register check thread succ.\n");
     }
     return 0;
 }
@@ -104,6 +104,7 @@ bool CRegister::IsRunning()
 
 int CRegister::TryCheckNode()
 {
+    printf("%s =======================================================\n", __func__);
     if (EN_ZK_REGISTER_STATUS_UNREGISTER == m_status)
     {
         printf("CRegister::TryCheckNode status is un register. don't need check\n");
@@ -136,6 +137,7 @@ int CRegister::TryCheckNode()
 
 int CRegister::TryRegisterNode()
 {
+    printf("%s =======================================================\n", __func__);
     if (EN_ZK_REGISTER_STATUS_UNREGISTER != m_status)
     {
         printf("CRegister::TryCheckNode status is not unregister.\n");
@@ -157,7 +159,7 @@ int CRegister::TryRegisterNode()
         return ret_code;
     }
 
-    m_raw_zk_path = m_self_info.m_zk_path + "/" + raw_node_name;
+    m_raw_zk_path = raw_node_name;
 
     struct Stat stat;
     string info;
@@ -190,6 +192,7 @@ int CRegister::TryRegisterNode()
 
 int CRegister::TryUnregisterNode()
 {
+    printf("%s =======================================================\n", __func__);
     if (EN_ZK_REGISTER_STATUS_UNREGISTER == m_status)
     {
         printf("CRegister::TryUnregisterNode status is un register. don't need unregister\n");

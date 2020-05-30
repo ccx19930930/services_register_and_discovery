@@ -2,8 +2,8 @@
 #define _ZK_DEFINE_H_
 
 const int kMaxBufferLen = 4096;
-const int kZkRegisterIntervalTime = 1000;
-const int kZkDiscoveryIntervalTime = 1000;
+const int kZkRegisterIntervalTime = 1000000;
+const int kZkDiscoveryIntervalTime = 1000000;
 
 enum EZkRegisterStatus
 {

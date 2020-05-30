@@ -79,10 +79,15 @@ int CDiscovery::DiscoveryCheck()
 {
     DownPathCheck();
     InvalidNodeCheck();
+
+#ifdef _DEBUG_
+    DebugPrintAllNode();
+#endif
 }
 
 int CDiscovery::DownPathCheck()
 {
+    printf("%s =======================================================\n", __func__);
     CAutoMutexLock auto_lock(m_mutex);
     for (const auto& down_path : m_down_path_list)
     {
@@ -96,7 +101,7 @@ int CDiscovery::DownPathCheck()
         {
             for (auto node_path : node_list)
             {
-                down_node->m_invalid_node_path_list.insert(node_path);
+                down_node->m_invalid_node_path_list.insert(down_path.first + '/' + node_path);
             }
             for (const auto& node : down_node->m_node_list)
             {
@@ -111,6 +116,7 @@ int CDiscovery::DownPathCheck()
 
 int CDiscovery::InvalidNodeCheck()
 {
+    printf("%s =======================================================\n", __func__);
     CAutoMutexLock auto_lock(m_mutex);
     for (const auto& down_path : m_down_path_list)
     {
@@ -152,6 +158,29 @@ int CDiscovery::InvalidNodeCheck()
     return 0;
 }
 
+int CDiscovery::DebugPrintAllNode()
+{
+    printf("%s =======================================================\n", __func__);
+    CAutoMutexLock auto_lock(m_mutex);
+    for (const auto& down_path : m_down_path_list)
+    {
+        printf("%s down_path=%s --------------------------------------------\n", __func__, down_path.first.c_str());
+        printf("%s node_list: \n", __func__);
+        for (auto& down_node : down_path.second->m_node_list)
+        {
+            printf("%s node=%s \n", __func__, down_node.first.c_str());
+            printf("%s info=%s \n", __func__, down_node.second.ToString().c_str());
+        }
+
+        printf("%s invalid_node_list: \n", __func__);
+        for (const auto& invalid_node : down_path.second->m_invalid_node_path_list)
+        {
+            printf("%s invalid_node:%s \n", __func__, invalid_node.c_str());
+        }
+    }
+    return 0;
+}
+
 bool CDiscovery::IsRunning()
 {
     return m_is_running;
@@ -179,6 +208,7 @@ void CDiscovery::ZkNodeWatcher(zhandle_t* zh, int type, int state, const char* p
 
 int CDiscovery::OnPathChange(string path)
 {
+    printf("%s path=%s  =======================================================\n", __func__, path.c_str());
     CAutoMutexLock auto_lock(m_mutex);
     if (m_down_path_list.count(path))
     {
@@ -189,6 +219,7 @@ int CDiscovery::OnPathChange(string path)
 
 int CDiscovery::OnNodeChange(string node)
 {
+    printf("%s node=%s  =======================================================\n", __func__, node.c_str());
     CAutoMutexLock auto_lock(m_mutex);
     string path;
     if (m_down_path_2_dir.count(node))

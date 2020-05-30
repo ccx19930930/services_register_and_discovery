@@ -50,6 +50,7 @@ private:
     int DiscoveryCheck();
     int DownPathCheck();
     int InvalidNodeCheck();
+    int DebugPrintAllNode();
     bool IsRunning();
 
 private:
