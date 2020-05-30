@@ -23,9 +23,19 @@ private:
 class CNodeInfo
 {
 public:
-    CNodeInfo() {}
+    CNodeInfo() { Reset(); }
     ~CNodeInfo() {}
 public:
+    void Reset()
+    {
+        m_ip = "";
+        m_port = "";
+        m_zk_path = "";
+        m_module_name = "";
+        m_module_id = "";
+        m_module_idx = "";
+    }
+
     string ToString()
     {
         stringstream oss;
@@ -45,7 +55,7 @@ public:
         return oss.str();
     }
 
-    void FromString(const string & info)
+    void FromString(const string& info)
     {
         auto get_val = [info](string key)->string
         {
@@ -64,7 +74,7 @@ public:
         m_module_idx = get_val("MODULE_IDX");
     }
 
-    void FromJson(const Json::Value & info)
+    void FromJson(const Json::Value& info)
     {
         m_ip = info["ip"].asString();
         m_port = info["port"].asString();
