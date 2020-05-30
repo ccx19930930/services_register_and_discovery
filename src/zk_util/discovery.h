@@ -44,6 +44,7 @@ public:
 public:
     int StartCheck();
     int Stop();
+    static void OnZkHandleResetFunc();
 
 private:
     static void* DiscoveryCheckThread(void * param);
@@ -60,7 +61,8 @@ private:
 private:
     int OnPathChange(string path);
     int OnNodeChange(string node);
-
+    void OnZkHandleReset();
+    
 private:
     pthread_t m_down_check_thread_id;
     bool m_is_running;

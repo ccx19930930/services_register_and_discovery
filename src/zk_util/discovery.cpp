@@ -64,9 +64,17 @@ int CDiscovery::Stop()
     m_is_running = false;
 }
 
+void CDiscovery::OnZkHandleResetFunc()
+{
+    CDiscovery::GetInstance()->OnZkHandleReset();
+}
+
 void* CDiscovery::DiscoveryCheckThread(void* param)
 {
     prctl(PR_SET_NAME, "zk_discovery_check");
+
+    CZkHandle::GetInstance()->AddResetHandleFn("discovery", CDiscovery::OnZkHandleResetFunc);
+
     while (true == CDiscovery::GetInstance()->IsRunning())
     {
         CDiscovery::GetInstance()->DiscoveryCheck();
@@ -164,7 +172,7 @@ int CDiscovery::DebugPrintAllNode()
     CAutoMutexLock auto_lock(m_mutex);
     for (const auto& down_path : m_down_path_list)
     {
-        printf("%s down_path=%s --------------------------------------------\n", __func__, down_path.first.c_str());
+        printf("%s down_path=%s is_full_node=%d --------------------------------------------\n", __func__, down_path.first.c_str(), down_path.second->m_full_node);
         printf("%s node_list: \n", __func__);
         for (auto& down_node : down_path.second->m_node_list)
         {
@@ -231,5 +239,15 @@ int CDiscovery::OnNodeChange(string node)
         m_down_path_list[path]->m_invalid_node_path_list.insert(node);
     }
     return 0;
+}
+
+void CDiscovery::OnZkHandleReset()
+{
+    printf("%s =======================================================\n", __func__);
+    CAutoMutexLock auto_lock(m_mutex);
+    for (const auto& down_path : m_down_path_list)
+    {
+        down_path.second->m_full_node = false;
+    }
 }
 

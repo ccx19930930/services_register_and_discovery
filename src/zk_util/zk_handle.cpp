@@ -222,6 +222,23 @@ int CZkHandle::ZkSeeNodeInfo(const string& path, const string& value)
     return ret_code;
 }
 
+int CZkHandle::AddResetHandleFn(string type, OnResetHandle_Fn func)
+{
+    CAutoMutexLock auto_lock(m_mutex);
+    m_on_reset_handle_fn_list[type] = func;
+    return 0;
+}
+
+int CZkHandle::DelResetHandleFn(string type)
+{
+    CAutoMutexLock auto_lock(m_mutex);
+    if (m_on_reset_handle_fn_list.count(type))
+    {
+        m_on_reset_handle_fn_list.erase(type);
+    }
+    return 0;
+}
+
 void CZkHandle::ZkInitWatcher(zhandle_t* zh, int type, int state, const char* path, void* watcherCtx)
 {
     printf("CZkHandle::ZkInitWatchar: [type=%d] [state=%d] [path=%s] [watcher_ctx=%p]\n", type, state, path, watcherCtx);
@@ -229,6 +246,7 @@ void CZkHandle::ZkInitWatcher(zhandle_t* zh, int type, int state, const char* pa
 
 int CZkHandle::ResetZkHandle()
 {
+    CAutoMutexLock auto_lock(m_mutex);
     zhandle_t* new_zk_handle = zookeeper_init(m_host_list.c_str(), &ZkInitWatcher, m_time_out, 0, nullptr, 0);
     if (nullptr == new_zk_handle)
     {
@@ -239,6 +257,11 @@ int CZkHandle::ResetZkHandle()
 
     zhandle_t* old_zk_handle = m_zk_handle;
     m_zk_handle = new_zk_handle;
+
+    for (const auto & func : m_on_reset_handle_fn_list)
+    {
+        func.second();
+    }
 
     if (old_zk_handle)
     {

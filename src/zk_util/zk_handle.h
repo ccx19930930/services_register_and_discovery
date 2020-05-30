@@ -14,7 +14,7 @@
 
 using namespace std;
 
-
+typedef void (*OnResetHandle_Fn)();
 class CZkHandle : public CUnCopyable
 {
 private:
@@ -43,6 +43,10 @@ public:
 public:
     int ZkSeeNodeInfo(const string& path, const string& value);
 
+public:
+    int AddResetHandleFn(string type, OnResetHandle_Fn func);
+    int DelResetHandleFn(string type);
+
 private:
     static void ZkInitWatcher(zhandle_t* zh, int type, int state, const char* path, void* watcherCtx);
     int ResetZkHandle();
@@ -58,6 +62,8 @@ private:
     zhandle_t* m_zk_handle;
     string m_host_list;
     int m_time_out;
+
+    map<string, OnResetHandle_Fn> m_on_reset_handle_fn_list;
 };
 
 #endif
