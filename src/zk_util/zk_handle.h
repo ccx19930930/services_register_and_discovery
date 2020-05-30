@@ -41,7 +41,7 @@ public:
     int ZkWGetNodeInfo(const string& path, watcher_fn watcher, string& info, struct Stat& stat);
 
 public:
-    int ZkSeeNodeInfo(const string& path, const string& value);
+    int ZkSetNodeInfo(const string& path, const string& value);
 
 public:
     int AddResetHandleFn(string type, OnResetHandle_Fn func);

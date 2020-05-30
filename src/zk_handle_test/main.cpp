@@ -23,7 +23,7 @@ int main()
     zk_handle->ZkCreateNode("/test_2", "2", false, raw_name);
 
     zk_handle->ZkGetNodeInfo("/test_2", node_info, stat);
-    zk_handle->ZkSeeNodeInfo("/test_2", "3");
+    zk_handle->ZkSetNodeInfo("/test_2", "3");
     zk_handle->ZkGetNodeInfo("/test_2", node_info, stat);
 
 

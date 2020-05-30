@@ -211,7 +211,7 @@ int CZkHandle::ZkWGetNodeInfo(const string& path, watcher_fn watcher, string& in
     return ret_code;
 }
 
-int CZkHandle::ZkSeeNodeInfo(const string& path, const string& value)
+int CZkHandle::ZkSetNodeInfo(const string& path, const string& value)
 {
     printf("CZkHandle::ZkSeeNodeInfo set node info. path=%s value=%s\n", path.c_str(), value.c_str());
     int ret_code = zoo_set(m_zk_handle, path.c_str(), value.c_str(), value.size(), -1);
