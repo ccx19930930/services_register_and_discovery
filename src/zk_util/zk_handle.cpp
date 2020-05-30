@@ -3,11 +3,19 @@
 
 #include <stdio.h>
 
+#include <sys/prctl.h>
+#include <unistd.h>
+#include <pthread.h>
+
 CZkHandle* CZkHandle::m_pins = nullptr;
 pthread_mutex_t CZkHandle::m_mutex;
 
 CZkHandle::CZkHandle()
-: m_zk_handle(nullptr)
+: m_handle_check_thread_id(0)
+, m_zk_handle(nullptr)
+, m_is_running(false)
+, m_host_list("")
+, m_time_out(0)
 {
 }
 
@@ -27,19 +35,29 @@ CZkHandle* CZkHandle::GetInstance()
 int CZkHandle::ZkInit(const string& host_list, const int time_out)
 {
     zoo_set_debug_level(ZOO_LOG_LEVEL_ERROR);
-    m_zk_handle = zookeeper_init(host_list.c_str(), &ZkInitWatcher, time_out, 0, nullptr, 0);
-    if (nullptr == m_zk_handle)
+    m_host_list = host_list;
+    m_time_out = time_out;
+
+    if (0 == m_handle_check_thread_id)
     {
-        printf("CZkHandle::ZkInit: connect to zk fail.\n");
-        return -1;
+        m_is_running = true;
+        if (0 != pthread_create(&m_handle_check_thread_id, nullptr, CZkHandle::ZkHandleCheckThread, nullptr))
+        {
+            printf("CZkHandle::ZkInit create register check thread fail.\n");
+            return -1;
+        }
+        printf("CZkHandle::ZkInit create register check thread succ.\n");
     }
-    printf("CZkHandle::ZkInit: connect to zk succ.\n");
     return 0;
 }
 
 int CZkHandle::ZkClose()
 {
-    zookeeper_close(m_zk_handle);
+    if (m_zk_handle)
+    {
+        zookeeper_close(m_zk_handle);
+        m_zk_handle = nullptr;
+    }
     printf("CZkHandle::ZkClose: zk close.\n");
 }
 
@@ -207,4 +225,53 @@ int CZkHandle::ZkSeeNodeInfo(const string& path, const string& value)
 void CZkHandle::ZkInitWatcher(zhandle_t* zh, int type, int state, const char* path, void* watcherCtx)
 {
     printf("CZkHandle::ZkInitWatchar: [type=%d] [state=%d] [path=%s] [watcher_ctx=%p]\n", type, state, path, watcherCtx);
+}
+
+int CZkHandle::ResetZkHandle()
+{
+    zhandle_t* new_zk_handle = zookeeper_init(m_host_list.c_str(), &ZkInitWatcher, m_time_out, 0, nullptr, 0);
+    if (nullptr == new_zk_handle)
+    {
+        printf("CZkHandle::ResetZkHandle: connect to zk fail.\n");
+        return -1;
+    }
+    printf("CZkHandle::ResetZkHandle: connect to zk succ.\n");
+
+    zhandle_t* old_zk_handle = m_zk_handle;
+    m_zk_handle = new_zk_handle;
+
+    if (old_zk_handle)
+    {
+        zookeeper_close(old_zk_handle);
+    }
+    return 0;
+}
+
+void* CZkHandle::ZkHandleCheckThread(void* param)
+{
+    prctl(PR_SET_NAME, "zk_handle_check");
+    while (true == CZkHandle::GetInstance()->IsRunning())
+    {
+        CZkHandle::GetInstance()->ZkHandleCheck();
+        usleep(kZkHandleIntervalTime);
+    }
+    return nullptr;
+}
+
+int CZkHandle::ZkHandleCheck()
+{
+    struct Stat stat;
+    if (m_zk_handle == nullptr)
+    {
+        ResetZkHandle();
+    }
+    else if(ZOK != ZkExists("/", stat))
+    {
+        ResetZkHandle();
+    }
+}
+
+bool CZkHandle::IsRunning()
+{
+    return m_is_running;
 }

@@ -45,9 +45,19 @@ public:
 
 private:
     static void ZkInitWatcher(zhandle_t* zh, int type, int state, const char* path, void* watcherCtx);
+    int ResetZkHandle();
 
 private:
+    static void* ZkHandleCheckThread(void* param);
+    int ZkHandleCheck();
+    bool IsRunning();
+
+private:
+    pthread_t m_handle_check_thread_id;
+    bool m_is_running;
     zhandle_t* m_zk_handle;
+    string m_host_list;
+    int m_time_out;
 };
 
 #endif

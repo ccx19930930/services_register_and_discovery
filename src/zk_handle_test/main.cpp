@@ -34,6 +34,7 @@ int main()
     node_list.clear();
     zk_handle->ZkGetChildren("/", node_list);
 
+    sleep(60);
 
     zk_handle->ZkClose();
     return 0;
