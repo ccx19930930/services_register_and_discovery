@@ -213,11 +213,11 @@ int CZkHandle::ZkWGetNodeInfo(const string& path, watcher_fn watcher, string& in
 
 int CZkHandle::ZkSetNodeInfo(const string& path, const string& value)
 {
-    printf("CZkHandle::ZkSeeNodeInfo set node info. path=%s value=%s\n", path.c_str(), value.c_str());
+    printf("CZkHandle::ZkSetNodeInfo set node info. path=%s value=%s\n", path.c_str(), value.c_str());
     int ret_code = zoo_set(m_zk_handle, path.c_str(), value.c_str(), value.size(), -1);
     if (ZOK != ret_code)
     {
-        printf("CZkHandle::ZkSeeNodeInfo set node fail.");
+        printf("CZkHandle::ZkSetNodeInfo set node fail.");
     }
     return ret_code;
 }
